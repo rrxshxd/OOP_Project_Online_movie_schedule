@@ -1,6 +1,5 @@
 package controller;
 
-import java.util.InputMismatchException;
 
 import models.Movie;
 import models.Session;
@@ -9,6 +8,7 @@ import repositories.movie_repo;
 import repositories.session_repo;
 import repositories.ticket_repo;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -23,8 +23,11 @@ public class Main {
             Scanner sc = new Scanner(System.in);
 
             while (true) {
+                System.out.println("Welcome to the cinema web application");
                 System.out.println("1. Show all movies");
                 System.out.println("0. Exit");
+                System.out.println("****************************************");
+                System.out.println("Select option:");
 
                 int command = sc.nextInt();
 
@@ -54,6 +57,8 @@ public class Main {
         while (true) {
             System.out.println("1. Select movie");
             System.out.println("0. Return");
+            System.out.println("****************************************");
+            System.out.println("Select option:");
 
             int command = sc.nextInt();
 
@@ -72,7 +77,7 @@ public class Main {
     private static void selectMovie(movie_repo movieRepository) throws Exception {
         session_repo sessionRepository = new session_repo(DB_URL, DB_USERNAME, DB_PASSWORD);
         Scanner sc = new Scanner(System.in);
-        System.out.println("Enter movie ID");
+        System.out.println("Enter movie ID:");
         int movieId = sc.nextInt();
 
 
@@ -87,6 +92,8 @@ public class Main {
             System.out.println("1. Select movie");
             System.out.println("2. Show sessions");
             System.out.println("0. Return");
+            System.out.println("****************************************");
+            System.out.println("Select option:");
 
             int command = sc.nextInt();
 
@@ -117,8 +124,10 @@ public class Main {
 
         while (true) {
             System.out.println("1. Select movie");
-            System.out.println("2. Book a ticket");
+            System.out.println("2. Show tickets");
             System.out.println("0. Return");
+            System.out.println("****************************************");
+            System.out.println("Select option:");
 
             int command = sc.nextInt();
 
@@ -141,22 +150,68 @@ public class Main {
         ticket_repo ticketRepository = new ticket_repo(DB_URL, DB_USERNAME, DB_PASSWORD);
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Choose the session");
+        System.out.println("Choose the session:");
         int sessionId = sc.nextInt();
         int maxId = sessionRepository.sessionCounter(movieRepository.getMovieNameById(chosenMovie));
 
+
         if (sessionId > 0 && maxId >= sessionId) {
-            bookTicket(ticketRepository, sessionId);
+            sessionTickets(movieRepository, ticketRepository, sessionId, chosenMovie);
         } else {
             System.out.println("Session with id " + sessionId + " was not found");
         }
     }
 
-    public static void bookTicket(ticket_repo ticketRepository, int sessionId) throws Exception {
-        List<Ticket> tickets = ticketRepository.getTicketsById(sessionId);
+    public static void sessionTickets(movie_repo movieRepository, ticket_repo ticketRepository, int sessionId, int movId) throws Exception {
+        Scanner sc = new Scanner(System.in);
+        List<Ticket> tickets = ticketRepository.getTicketsById(sessionId, movId);
         for (Ticket ticket: tickets) {
             System.out.println(ticket);
         }
+
+        while (true) {
+            System.out.println("1. Select movie");
+            System.out.println("2. Book ticket");
+            System.out.println("0. Return");
+            System.out.println("****************************************");
+            System.out.println("Select option:");
+
+            int command = sc.nextInt();
+
+            switch (command) {
+                case 1:
+                    selectMovie(movieRepository);
+                    break;
+                case 2:
+                    bookTicket(ticketRepository, sessionId, movId);
+                case 0:
+                    showAllMovies(movieRepository);
+                default:
+                    System.err.println("Invalid input");
+            }
+        }
+    }
+
+    public static void bookTicket(ticket_repo ticketRepository, int sessionId, int movId) throws Exception {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Choose ticket id:");
+        int ticketId = sc.nextInt();
+
+        if (!ticketRepository.isTicketBooked(ticketId, sessionId, movId)) {
+            System.out.println("Enter your name:");
+            String name = sc.next();
+            System.out.println("Enter your surname:");
+            String surname = sc.next();
+
+            ticketRepository.bookTicketById(ticketId, sessionId, movId,name + " " + surname);
+
+            System.out.println("Ticket has been booked successfully for you!");
+            System.out.println("****************************************");
+        } else {
+            System.out.println("Ticket with ID " + ticketId + " is already booked.");
+            System.out.println("****************************************");
+        }
+
     }
 
 }

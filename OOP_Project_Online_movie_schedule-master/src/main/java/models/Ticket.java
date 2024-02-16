@@ -58,14 +58,10 @@ public class Ticket {
         this.isBooked = isBooked;
     }
 
+
+
     @Override
     public String toString() {
-        return "Ticket{" +
-                "id=" + id +
-                ", ticketId=" + ticketId +
-                ", sessionId=" + sessionId +
-                ", movieName='" + movieName + '\'' +
-                ", isBooked=" + isBooked +
-                '}';
+        return getTicketId() + " | " + getMovieName() +  " | " + (getIsBooked() ? "Ticket is booked already" : "Ticket is available" );
     }
 }
